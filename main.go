@@ -1,33 +1,34 @@
 package main
 
 import (
-	"encoding/csv"
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/codeneuss/bccify/importer"
 )
 
-type Contact struct {
+type Recipient struct {
 	name  string
 	email string
 }
 
 type Recipents []string
 
-func (r *Recipents) Add(c Contact) {
+func (r *Recipents) Add(c Recipient) {
 	*r = append(*r, c.Recipient())
 }
 
-func (c *Contact) Email() string {
+func (c *Recipient) Email() string {
 	return c.email
 }
 
-func (c *Contact) Recipient() string {
+func (c *Recipient) Recipient() string {
 	return fmt.Sprintf("%s <%s>", c.name, c.email)
 }
 
-func NewContact(email, name string) Contact {
-	return Contact{
+func NewContact(email, name string) Recipient {
+	return Recipient{
 		email: email,
 		name:  name,
 	}
@@ -43,32 +44,30 @@ func main() {
 	}
 
 	fmt.Println(args[1])
-	fd, err := os.Open(args[1])
-	if err != nil {
-		fmt.Printf("Error opening file %s\n", args[1])
-		os.Exit(2)
-	}
 
-	csv := csv.NewReader(fd)
-
-	var recipients Recipents
-	for {
-		record, err := csv.Read()
-		if err != nil {
-			break
-		}
-		if strings.Contains(record[1], ";") {
-			emailaddesses := strings.Split(record[1], ";")
-			for i := range emailaddesses {
-				recipients.Add(NewContact(emailaddesses[i], record[0]))
-			}
-		} else {
-			recipients.Add(NewContact(record[1], record[0]))
+	var imp importer.Importer
+	switch {
+	case strings.HasSuffix(args[1], ".csv"):
+		imp = &importer.CSVImporter{
+			Filename:   args[1],
+			HasHeaders: true,
 		}
 	}
 
-	for i := range recipients {
-		fmt.Println(recipients[i])
+	if imp == nil {
+		fmt.Println("No Importer found")
+		os.Exit(1)
+	}
+
+	if err := imp.Import(); err != nil {
+		fmt.Println("Error on import: ", err.Error())
+		os.Exit(1)
+	}
+
+	fmt.Println(imp.FilterColumns())
+
+	for _, record := range imp.Filter(func(r importer.Record) bool { return strings.HasPrefix(r["name"], "J") }) {
+		fmt.Println(record["emailaddress"])
 	}
 
 }
