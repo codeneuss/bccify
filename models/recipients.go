@@ -13,7 +13,7 @@ func (c *Recipient) Email() string {
 }
 
 func (c *Recipient) Recipient() string {
-	return fmt.Sprintf("%s <%s>", c.name, c.email)
+	return fmt.Sprintf("\"%s\" <%s>", c.name, c.email)
 }
 
 func NewRecipient(email, name string) Recipient {

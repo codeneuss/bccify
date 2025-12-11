@@ -8,11 +8,11 @@ import (
 )
 
 type StdOutExporter struct {
-	Recipents models.Recipents
+	Recipients models.Recipents
 }
 
 func (e StdOutExporter) Export() error {
-	fmt.Println(strings.Join(e.Recipents, ";"))
+	fmt.Println(strings.Join(e.Recipients, ";"))
 
 	return nil
 }

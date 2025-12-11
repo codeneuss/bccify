@@ -1,5 +1,5 @@
 package exporter
 
 type Exporter interface {
-	Export()
+	Export() error
 }

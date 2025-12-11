@@ -49,7 +49,7 @@ func BCCify() {
 		os.Exit(2)
 	}
 
-	exporter := ex.StdOutExporter{Recipents: converter.Recipents}
+	var exporter ex.Exporter = &ex.MailToExporter{Recipients: converter.Recipents}
 
 	if err := exporter.Export(); err != nil {
 		fmt.Println("Error exporting recipients", err.Error())
@@ -64,8 +64,18 @@ type RecipientConverter struct {
 }
 
 func (t *RecipientConverter) Convert() error {
+	emailColumn := "emailaddress"
+	nameColum := "name"
 	for _, rec := range t.Records {
-		t.Recipents.Add(mo.NewRecipient(rec["emailaddress"], rec["name"]))
+
+		if strings.Contains(rec[emailColumn], ";") {
+			for _, r := range strings.Split(rec[emailColumn], ";") {
+				t.Recipents.Add(mo.NewRecipient(r, rec[nameColum]))
+			}
+			continue
+		}
+
+		t.Recipents.Add(mo.NewRecipient(rec[emailColumn], rec[nameColum]))
 	}
 
 	return nil
