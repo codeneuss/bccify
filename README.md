@@ -11,7 +11,7 @@ BCCify imports contact data from CSV files and allows you to filter recipients b
 - **CSV Import**: Load contacts from CSV files with support for headers
 - **Flexible Filtering**: Filter recipients using custom filter functions
 - **Recipient Formatting**: Automatically formats contacts as `Name <email@example.com>`
-- **Column Discovery**: View available columns from your CSV data
+- **Multiple Export Formats**: Output recipients to various formats (currently stdout)
 
 ## Installation
 
@@ -46,24 +46,36 @@ Jane Smith,jane@example.com
 Jack Wilson,jack@example.com
 ```
 
-### Example
+### Output
 
-The current implementation includes a demo filter that selects contacts whose names start with "J":
+The tool outputs all recipients in BCC format, separated by semicolons:
 
 ```bash
 bccify contacts.csv
 ```
 
-This will output the email addresses of all contacts matching the filter criteria.
+Output example:
+
+```
+John Doe <john@example.com>;Jane Smith <jane@example.com>;Jack Wilson <jack@example.com>
+```
 
 ## Project Structure
 
 ```
 bccify/
-├── main.go                 # Main application entry point
+├── cmd/
+│   └── main.go            # Application entry point
+├── bccify.go              # Core BCCify logic and converter
 ├── importer/
 │   ├── importer.go        # Importer interface definition
 │   └── csv.go             # CSV importer implementation
+├── models/
+│   ├── recipient.go       # Recipient model
+│   └── recipients.go      # Recipients collection and methods
+├── exporter/
+│   ├── exporter.go        # Exporter interface definition
+│   └── stdout.go          # Stdout exporter implementation
 └── README.md
 ```
 
@@ -81,25 +93,42 @@ type Importer interface {
 }
 ```
 
-### CSVImporter
+### Exporter Interface
 
-Import CSV files with optional header support:
+The `Exporter` interface defines the contract for data exporters:
 
 ```go
-imp := &importer.CSVImporter{
-    Filename:   "contacts.csv",
-    HasHeaders: true,
+type Exporter interface {
+    Export() error
 }
 ```
 
-### Filtering Records
+### Models
 
-Filter contacts using custom filter functions:
+**Recipient**: Represents a single email recipient with name and email address.
+
+**Recipients**: A collection of recipients formatted as strings (`Name <email@example.com>`).
+
+### Example Usage
 
 ```go
-filtered := imp.Filter(func(r importer.Record) bool {
-    return strings.HasPrefix(r["name"], "J")
-})
+// Import from CSV
+importer := &importer.CSVImporter{
+    Filename:   "contacts.csv",
+    HasHeaders: true,
+}
+err := importer.Import()
+
+// Get all records (or filter them)
+records := importer.Filter(nil)
+
+// Convert to recipients
+converter := RecipientConverter{Records: records}
+converter.Convert()
+
+// Export to stdout
+exporter := exporter.StdOutExporter{Recipents: converter.Recipents}
+exporter.Export()
 ```
 
 ## Development
@@ -132,7 +161,8 @@ This project is open source and available under the [MIT License](LICENSE).
 
 Future improvements planned:
 
-- Support for additional file formats (Excel, vCard)
-- Interactive CLI for building filters
-- Output to various email client formats
+- Support for additional import formats (Excel, vCard)
+- Support for additional export formats (file output, email clients)
+- Interactive CLI for building custom filters
 - Email validation and deduplication
+- Custom column mapping configuration

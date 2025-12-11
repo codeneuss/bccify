@@ -44,6 +44,11 @@ func (imp *CSVImporter) Import() error {
 }
 
 func (imp *CSVImporter) Filter(filterFunction func(r Record) bool) Records {
+
+	if filterFunction == nil {
+		return imp.records
+	}
+
 	var filteredRecords Records
 	for _, r := range imp.records {
 		if filterFunction(r) {
