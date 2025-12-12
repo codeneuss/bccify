@@ -2,6 +2,8 @@
 
 A command-line tool written in Go that helps you create email recipient lists in BCC format from CSV files.
 
+[![Go](https://github.com/codeneuss/bccify/actions/workflows/go.yml/badge.svg)](https://github.com/codeneuss/bccify/actions/workflows/go.yml)
+
 ## Overview
 
 BCCify imports contact data from CSV files and allows you to filter recipients based on custom criteria. It's designed to help you quickly generate BCC recipient lists for bulk email sending.
