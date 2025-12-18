@@ -43,10 +43,10 @@ func (imp *CSVImporter) Import() error {
 	return nil
 }
 
-func (imp *CSVImporter) Filter(filterFunction func(r Record) bool) Records {
+func (imp *CSVImporter) Filter(filterFunction func(r Record) bool) (Records, error) {
 
 	if filterFunction == nil {
-		return imp.records
+		return imp.records, nil
 	}
 
 	var filteredRecords Records
@@ -55,9 +55,9 @@ func (imp *CSVImporter) Filter(filterFunction func(r Record) bool) Records {
 			filteredRecords = append(filteredRecords, r)
 		}
 	}
-	return filteredRecords
+	return filteredRecords, nil
 }
 
-func (imp *CSVImporter) FilterColumns() []string {
-	return imp.headers
+func (imp *CSVImporter) FilterColumns() ([]string, error) {
+	return imp.headers, nil
 }

@@ -28,6 +28,11 @@ func BCCify() {
 			Filename:   args[1],
 			HasHeaders: true,
 		}
+	case strings.HasSuffix(args[1], ".xlsx"):
+		importer = &im.ExcelImporter{
+			Filename:   args[1],
+			HasHeaders: true,
+		}
 	}
 
 	if importer == nil {
@@ -40,8 +45,15 @@ func BCCify() {
 		os.Exit(1)
 	}
 
+	records, err := importer.Filter(nil)
+
+	if err != nil {
+		fmt.Println("Error filtering records", err.Error())
+		os.Exit(2)
+	}
+
 	converter := RecipientConverter{
-		Records: importer.Filter(nil),
+		Records: records,
 	}
 
 	if err := converter.Convert(); err != nil {
